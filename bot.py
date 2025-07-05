@@ -28,12 +28,12 @@ async def help_me(ctx: commands.Context):
     )
 
 @bot.command()
-async def show_city(ctx: commands.Context, *, city_name=""):
+async def show_city(ctx: commands.Context, city_name: str, marker_color: str = "red"):
     # Belirtilen şehirle birlikte haritayı gösterecek komutu yazın.
     if not city_name:
         await ctx.send("Hatalı format. Lütfen şehir adını İngilizce olarak ve komuttan sonra bir boşluk bırakarak girin.")
         return
-    manager.create_graph(f'{ctx.author.id}.png', [city_name])
+    manager.create_graph(f'{ctx.author.id}.png', [city_name], marker_color)
     await ctx.send(file=discord.File(f'{ctx.author.id}.png'))
 
 @bot.command()
@@ -55,3 +55,4 @@ async def remember_city(ctx: commands.Context, *, city_name=""):
 
 if __name__ == "__main__":
     bot.run(TOKEN)
+
