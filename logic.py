@@ -5,7 +5,7 @@ matplotlib.use('Agg')  # Matplotlib arka planını, pencere göstermeden dosyala
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs  # Harita projeksiyonlarıyla çalışmamızı sağlayacak modülü içe aktarma
 import matplotlib.pyplot as plt  # Matplotlib kütüphanesinden grafik oluşturma ve gösterme modülünü içe aktarma
-
+import cartopy.feature as cfeature
 
 class DB_Map():
     def __init__(self, database):
@@ -50,7 +50,7 @@ class DB_Map():
             cities = [row[0] for row in cursor.fetchall()]
             return cities  # Kullanıcının şehir listesini döndürme
 
-    def get_coordinat(self, city_name):
+    def get_coordinates(self, city_name):
         conn = sqlite3.connect(self.database)
         with conn:
             cursor = conn.cursor()
@@ -61,18 +61,26 @@ class DB_Map():
             coordinates = cursor.fetchone()
             return coordinates  # Şehrin koordinatlarını döndürme
 
-    def create_graph(self, path, cities):
+    def create_graph(self, path, cities, marker_color='red'):
+
         ax = plt.axes(projection=ccrs.PlateCarree())
-        ax.stock_img()
+
+        ax.add_feature(cfeature.LAND, facecolor='lightgray')      # Kara
+        ax.add_feature(cfeature.OCEAN, facecolor='lightblue')     # Okyanus
+        ax.add_feature(cfeature.BORDERS, linestyle='--')          # Ülke sınırları
+        ax.add_feature(cfeature.COASTLINE)                        # Kıyılar
+        ax.add_feature(cfeature.LAKES, facecolor='cyan')          # Göller
+        ax.add_feature(cfeature.RIVERS, edgecolor='blue')         # Nehirler
+
         for city in cities:
             coordinates = self.get_coordinates(city)
             if coordinates:
                 lat, lng = coordinates
-                ax.plot([lng], [lat], color='r', linewidth=1, marker='.', transform=ccrs.Geodetic())
-                ax.text(lng + 3, lat + 12, city, horizontalalignment='left', transform=ccrs.Geodetic())
+                ax.plot([lng], [lat], color=marker_color, marker='o', transform=ccrs.Geodetic())
+                ax.text(lng + 1, lat + 1, city, transform=ccrs.Geodetic())
+
         plt.savefig(path)
         plt.close()
-
     def draw_distance(self, city1, city2):
         # İki şehir arasındaki mesafeyi göstermek için bir çizgi çizme
         city1_coords = self.get_coordinates(city1)
